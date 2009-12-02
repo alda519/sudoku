@@ -7,12 +7,12 @@ require 'tk'
 class TkSudoku < Sudoku_core
 
   Colors=["#daeaea", "#f8e7cd"] * 2
-  DialogParams = { "defaultextension" => "*.sudoku", "filetypes"=>[["Sudoku", [".sudoku"]], ["All files", ["*.*"]]] }
+  DialogParams = { "defaultextension" => ".sudoku", "filetypes" => [["Sudoku", [".sudoku"]], ["All files", ["*.*"]]] }
 
   def initialize
     init_variables
 
-    solve = proc { init_variables; update_sudoku; lockscreen; solve_sudoku; print; update_window } # print;  print; 
+    solve = proc { init_variables; update_sudoku; lockscreen; solve_sudoku; print; update_window }
     new   = proc { clear_all; unlockscreen }
     open  = proc {
       unlockscreen
@@ -20,17 +20,21 @@ class TkSudoku < Sudoku_core
         update_window
       else
         puts "error"
+        # todo: mozna nejaky error dialog?
       end
     }
     save = proc {
-      if ! save_sudoku Tk.getSaveFile( DialogParams.update("title"=>"Save Sudoku") ) then
+      if not save_sudoku Tk.getSaveFile( DialogParams.update("title"=>"Save Sudoku") ) then
         puts "error"
+        # todo: mozna nejaky error dialog?
       end
     }
+
+    # toto odstranit potom
     prin = proc { begin; print; rescue; end }
     prin_ver = proc { begin; print_verbose; rescue; end }
 
-    @root = TkRoot.new() { title "SUDOKU"; resizable  false, false } #; geometry '306x326' } # ; iconbitmap "sudoku.ico" } # +-position_x+-position_y
+    @root = TkRoot.new() { title "SUDOKU"; resizable  false, false } #;  geometry '306x312' } # ; iconbitmap "sudoku.ico" } # +-position_x+-position_y
 
     bar = TkMenu.new()
     sys = TkMenu.new(bar) { tearoff false }
@@ -40,7 +44,7 @@ class TkSudoku < Sudoku_core
     sys.add 'separator'
     sys.add 'command', 'label'=>"Quit", 'underline'=>0, 'command' => proc { @root.destroy }
     
-    bar.add 'cascade', 'menu' => sys, 'label'=>"Menu", 'underline'=>0
+    bar.add 'cascade', 'menu' => sys, 'label'=>"Menu", 'underline'=> 0
     bar.add 'command', 'label'=>"Solve", 'underline'=>0, 'command' => solve
     bar.add 'command', 'label'=>"Print", 'underline'=>0, 'command' => prin
     bar.add 'command', 'label'=>"Print!", 'underline'=>0, 'command' => prin_ver
@@ -48,9 +52,6 @@ class TkSudoku < Sudoku_core
 
     @buttons = Array.new
     @values = Array.new
-
-    #button = TkButton.new() { text "Vyresit sudoku"; command solve }
-    #button.pack "side" => "right" #, "fill"=>"y")
 
     9.times { |a|
       line = TkFrame.new#.pack 'expand'=>true
@@ -116,16 +117,16 @@ class TkSudoku < Sudoku_core
       file = File.new filename, "w"
       @values.each_index { |i|
         if @values[i].value != "" then
-      file.write @values[i].value
-    else
-      file.write "0"
-    end
+          file.write @values[i].value
+        else
+          file.write "0"
+        end
         file.write "\n" if i % 9 == 8
       }
       file.close
-      return true
+      true
     rescue
-      return false
+      false
     end
   end
 
@@ -169,14 +170,16 @@ class TkSudoku < Sudoku_core
   def lockscreen
     @buttons.each_index { |i|
       if @buttons[i].value.size == 1 then
-        @buttons[i].configure 'state' => 'disabled'
+        # @buttons[i].configure 'state' => 'disabled'
+        @buttons[i].configure "foreground" => "#000" 
       end
     }
   end
   
   def unlockscreen
     @buttons.each_index { |i|   
-      @buttons[i].configure 'state' => 'normal'
+      # @buttons[i].configure 'state' => 'normal'
+      @buttons[i].configure "foreground" => "#f00" 
     }
   end
 
