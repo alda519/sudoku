@@ -4,6 +4,7 @@ require 'sudoku_core.rb'
 
 require 'tk'
 
+
 class TkSudoku < Sudoku_core
 
   Colors=["#daeaea", "#f8e7cd"] * 2
@@ -12,11 +13,11 @@ class TkSudoku < Sudoku_core
   def initialize
     init_variables
 
-    solve = proc { init_variables; update_sudoku; lockscreen; solve_sudoku; print; update_window }
-    new   = proc { clear_all; unlockscreen }
+    solve = proc { init_variables; update_sudoku; color_red; solve_sudoku; print; update_window }
+    new   = proc { clear_all; color_black }
     open  = proc {
-      unlockscreen
       if open_sudoku Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku") ) then
+        color_black
         update_window
       else
         puts "error"
@@ -62,13 +63,18 @@ class TkSudoku < Sudoku_core
           @buttons << TkEntry.new(cell, 'textvariable' => @values[-1]) { width 2; justify "center" }
           @buttons[-1].pack "side" => "left", 'expand' => true, "pady" => 5, "padx" => 4
           @buttons[-1].font('9x15')
+          @buttons[-1].configure "background" => Colors[(f%2)+(a/3)] 
 
-          @buttons[-1].bind("Any-ButtonRelease") {
+          @buttons[-1].bind("Any-ButtonRelease") { # click mysi dovnitr pole
             @buttons[9*a+3*f+g].cursor = 1
           }
           @buttons[-1].bind("Any-KeyRelease") { |event|
-            entries_any_key_event event, 9 * a + 3 * f + g
+            #entries_any_key_event event, 9 * a + 3 * f + g
+            proste_kontrola event, 9 * a + 3 * f + g
             puts "anyrelease"
+          }
+          @buttons[-1].bind("Any-KeyPress") {
+            @buttons[9 * a + 3 * f + g].configure "foreground" => "#000"
           }
           #@buttons[-1].bind("Any-KeyPress") { |event|
           #   if @values[9 * a + 3 * f + g].value.size > 1 then
@@ -134,52 +140,68 @@ class TkSudoku < Sudoku_core
   private
 
   def entries_any_key_event event, coord
-  if event.char >= "1" and event.char <= "9" then
-    @buttons[coord+1].focus
-    @buttons[coord+1].cursor = 1
-    if @values[coord].value.size > 0 then
-    @values[coord].value = @values[coord].value[-1].chr
+    if event.char >= "1" and event.char <= "9" then
+      @buttons[(coord+1)% 81].focus
+      @buttons[(coord+1)% 81].cursor = 1
+      if @values[coord].value.size > 0 then
+        @values[coord].value = @values[coord].value[-1].chr
+      end
+    elsif event.char.downcase != "" and event.char != "\t" then
+      @buttons[coord].value = ""
+    else
+      movecursor event.keysym, coord  #event a souradnice
     end
-  elsif event.char.downcase != "" and event.char != "\t" then
-    @buttons[coord].value = ""
-  else
-    movecursor event.keysym, coord  #event a souradnice
-  end
   #p event.mode
   end
 
-  def movecursor keysym, coord
-  case keysym
-    when "Left"
-    @buttons[coord-1].focus
-    @buttons[coord-1].cursor = 1
-    when "Right"
-      coord -= 81 if coord+1 > 80
-    @buttons[coord+1].focus
-    @buttons[coord+1].cursor = 1
-    when "Down"
-      coord -= 81 if coord+9 > 80
-    @buttons[coord+9].focus
-    @buttons[coord+9].cursor = 1
-    when "Up"
-    @buttons[coord-9].focus
-    @buttons[coord-9].cursor = 1
+  def proste_kontrola event, coord
+    if event.char >= "1" and event.char <= "9" then
+      @buttons[(coord+1)% 81].focus
+      @buttons[(coord+1)% 81].cursor = 1
+    elsif event.char.downcase != "" and event.char != "\t" then
+      @buttons[coord].value = ""
+    else
+      movecursor event.keysym, coord  #event a souradnice
+    end
+    @values.each_index { |i|
+      if @values[i].value.size > 0 then
+        @values[i].value = @values[i].value[-1].chr
+      end
+    }
   end
+
+  def movecursor keysym, coord
+    case keysym
+      when "Left"
+        @buttons[coord-1].focus
+        @buttons[coord-1].cursor = 1
+      when "Right"
+        coord -= 81 if coord+1 > 80
+        @buttons[coord+1].focus
+        @buttons[coord+1].cursor = 1
+      when "Down"
+        coord -= 81 if coord+9 > 80
+        @buttons[coord+9].focus
+        @buttons[coord+9].cursor = 1
+      when "Up"
+        @buttons[coord-9].focus
+        @buttons[coord-9].cursor = 1
+    end
   end
   
-  def lockscreen
+  def color_red
     @buttons.each_index { |i|
-      if @buttons[i].value.size == 1 then
+      if @buttons[i].value.size != 1 then
         # @buttons[i].configure 'state' => 'disabled'
-        @buttons[i].configure "foreground" => "#000" 
+        @buttons[i].configure "foreground" => "#f00" 
       end
     }
   end
   
-  def unlockscreen
+  def color_black
     @buttons.each_index { |i|   
       # @buttons[i].configure 'state' => 'normal'
-      @buttons[i].configure "foreground" => "#f00" 
+      @buttons[i].configure "foreground" => "#000" 
     }
   end
 
@@ -188,25 +210,4 @@ end
 
 sudoku = TkSudoku.new
 
-#p Tk.bindinfo_all
-#p TkSudoku.methods
-
 Tk.mainloop
-
-
-
-# puvodni button bind:
-=begin
-          @buttons[-1].bind("Any-KeyRelease") {
-            if @values[9*a+3*f+g].value.size > 1 then
-              @values[9*a+3*f+g].value = @values[9*a+3*f+g].value[-1].chr
-            end
-            if @values[9*a+3*f+g].value < "1" || @values[9*a+3*f+g].value > "9" then
-              @values[9*a+3*f+g].value = ""
-              #@buttons[9*a+3*f+g].configure 'state' => 'disabled'
-            end
-            if 9*a+3*f+g+1 < 81 and @values[9*a+3*f+g].value != "" then
-              @buttons[9*a+3*f+g+1].focus
-            end
-          }
-=end

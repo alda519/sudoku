@@ -11,9 +11,7 @@ class Sudoku_core
       9.times { |i|
         @sudoku[i] = Array.new
         9.times { |j|
-          char = file.getc#.chr
-          p char
-          char = char.chr
+          char = file.getc.chr
           redo if char == "\n" || char == " " || char == "\r"
           char = char.to_i
           if char == 0
