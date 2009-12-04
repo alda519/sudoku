@@ -8,13 +8,23 @@ require 'tk'
 class TkSudoku < Sudoku_core
 
   Colors=["#daeaea", "#f8e7cd"] * 2
+  LColors=["#eafafa", "#fff7dd"] * 2
   DialogParams = { "defaultextension" => ".sudoku", "filetypes" => [["Sudoku", [".sudoku"]], ["All files", ["*.*"]]] }
 
   def initialize
     init_variables
 
+    init_application
+  end
+
+private
+
+  def init_application
     solve = proc { init_variables; update_sudoku; color_red; solve_sudoku; print; update_window }
     new   = proc { clear_all; color_black }
+    open = proc { if open_sudoku Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku") ) then color_black; update_window; end }
+    save = proc { save_sudoku Tk.getSaveFile( DialogParams.update("title"=>"Save Sudoku") ) }
+=begin
     open  = proc {
       if open_sudoku Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku") ) then
         color_black
@@ -30,12 +40,12 @@ class TkSudoku < Sudoku_core
         # todo: mozna nejaky error dialog?
       end
     }
+=end
 
-    # toto odstranit potom
-    prin = proc { begin; print; rescue; end }
-    prin_ver = proc { begin; print_verbose; rescue; end }
+    prin = proc { begin; print; rescue; end } #toDEL
+    prin_ver = proc { begin; print_verbose; rescue; end } #toDEL
 
-    @root = TkRoot.new() { title "SUDOKU"; resizable  false, false } #;  geometry '306x312' } # ; iconbitmap "sudoku.ico" } # +-position_x+-position_y
+    @root = TkRoot.new() { title "SUDOKU"; resizable  false, false;  geometry '306x314' } # ; iconbitmap "sudoku.ico" } # +-position_x+-position_y
 
     bar = TkMenu.new()
     sys = TkMenu.new(bar) { tearoff false }
@@ -47,7 +57,7 @@ class TkSudoku < Sudoku_core
     
     bar.add 'cascade', 'menu' => sys, 'label'=>"Menu", 'underline'=> 0
     bar.add 'command', 'label'=>"Solve", 'underline'=>0, 'command' => solve
-    bar.add 'command', 'label'=>"Print", 'underline'=>0, 'command' => prin
+    bar.add 'command', 'label'=>"Print", 'underline'=>0, 'command' => prin #toDEL
     bar.add 'command', 'label'=>"Print!", 'underline'=>0, 'command' => prin_ver
     @root.menu bar
 
@@ -55,38 +65,31 @@ class TkSudoku < Sudoku_core
     @values = Array.new
 
     9.times { |a|
-      line = TkFrame.new#.pack 'expand'=>true
+      line = TkFrame.new #masterFrame #.pack 'expand'=>true
       3.times { |f|
         cell = TkFrame.new(line){ background Colors[(f%2)+(a/3)] } . pack "side"=>"left", 'expand'=>true
         3.times { |g|
           @values << TkVariable.new
-          @buttons << TkEntry.new(cell, 'textvariable' => @values[-1]) { width 2; justify "center" }
+          @buttons << TkEntry.new(cell, 'textvariable' => @values[-1]) { width 2; justify "center"; background LColors[(f%2)+(a/3)] }
           @buttons[-1].pack "side" => "left", 'expand' => true, "pady" => 5, "padx" => 4
           @buttons[-1].font('9x15')
-          @buttons[-1].configure "background" => Colors[(f%2)+(a/3)] 
-
-          @buttons[-1].bind("Any-ButtonRelease") { # click mysi dovnitr pole
-            @buttons[9*a+3*f+g].cursor = 1
-          }
-          @buttons[-1].bind("Any-KeyRelease") { |event|
-            #entries_any_key_event event, 9 * a + 3 * f + g
-            proste_kontrola event, 9 * a + 3 * f + g
-            puts "anyrelease"
-          }
-          @buttons[-1].bind("Any-KeyPress") {
-            @buttons[9 * a + 3 * f + g].configure "foreground" => "#000"
-          }
-          #@buttons[-1].bind("Any-KeyPress") { |event|
-          #   if @values[9 * a + 3 * f + g].value.size > 1 then
-          #     @values[9 * a + 3 * f + g].value = "R"
-          #   end
-          #}
         }
       }
-      line.pack# 'expand'=>true
+      line.pack 'expand'=>true
+    }
+
+    @buttons.each_index { |i|
+      @buttons[i].bind("Any-ButtonRelease") { # click mysi dovnitr pole
+        @buttons[i].cursor = 1
+      }
+      @buttons[i].bind("Any-KeyRelease") { |event|
+        entries_any_key_event event, i
+        puts "anyrelease"
+      }
     }
   end
-  
+
+
   def clear_all
     @values.each { |a|
       a.value = ""
@@ -137,35 +140,19 @@ class TkSudoku < Sudoku_core
   end
 
 
-  private
-
   def entries_any_key_event event, coord
     if event.char >= "1" and event.char <= "9" then
-      @buttons[(coord+1)% 81].focus
-      @buttons[(coord+1)% 81].cursor = 1
-      if @values[coord].value.size > 0 then
-        @values[coord].value = @values[coord].value[-1].chr
-      end
-    elsif event.char.downcase != "" and event.char != "\t" then
-      @buttons[coord].value = ""
-    else
-      movecursor event.keysym, coord  #event a souradnice
-    end
-  #p event.mode
-  end
-
-  def proste_kontrola event, coord
-    if event.char >= "1" and event.char <= "9" then
+      @buttons[coord].configure "foreground" => "#000"
       @buttons[(coord+1)% 81].focus
       @buttons[(coord+1)% 81].cursor = 1
     elsif event.char.downcase != "" and event.char != "\t" then
-      @buttons[coord].value = ""
+      @buttons[coord].value = @buttons[coord].value.delete(@buttons[coord].value.delete "123456789")
     else
       movecursor event.keysym, coord  #event a souradnice
     end
     @values.each_index { |i|
       if @values[i].value.size > 0 then
-        @values[i].value = @values[i].value[-1].chr
+        @values[i].value = @values[i].value.strip[-1].chr
       end
     }
   end

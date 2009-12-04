@@ -7,7 +7,7 @@ class Sudoku_core
   def open_sudoku filename
     begin
       file = File.new filename, "r"
-      puts "opened #{filename}"
+      #puts "opened #{filename}"
       9.times { |i|
         @sudoku[i] = Array.new
         9.times { |j|
