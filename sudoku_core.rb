@@ -22,9 +22,9 @@ class Sudoku_core
         }
       }
       file.close
-      return true
+      true
     rescue
-      return false
+      false
     end
   end
 

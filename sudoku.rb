@@ -22,25 +22,17 @@ private
   def init_application
     solve = proc { init_variables; update_sudoku; color_red; solve_sudoku; print; update_window }
     new   = proc { clear_all; color_black }
-    open = proc { if open_sudoku Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku") ) then color_black; update_window; end }
-    save = proc { save_sudoku Tk.getSaveFile( DialogParams.update("title"=>"Save Sudoku") ) }
-=begin
-    open  = proc {
-      if open_sudoku Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku") ) then
-        color_black
-        update_window
+    open = proc {
+      filename = Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku"))
+      if filename == "" then
+        ;
+      elsif open_sudoku filename then
+        color_black; update_window;
       else
-        puts "error"
-        # todo: mozna nejaky error dialog?
+        msgBox = Tk.messageBox('type'=>"ok", 'icon'=>"error", 'title'=>"Error", 'message'=>"Selected file is not in valid format" )
       end
     }
-    save = proc {
-      if not save_sudoku Tk.getSaveFile( DialogParams.update("title"=>"Save Sudoku") ) then
-        puts "error"
-        # todo: mozna nejaky error dialog?
-      end
-    }
-=end
+    save = proc { save_sudoku Tk.getSaveFile( DialogParams.update("title"=>"Save Sudoku") ) }
 
     prin = proc { begin; print; rescue; end } #toDEL
     prin_ver = proc { begin; print_verbose; rescue; end } #toDEL
@@ -65,7 +57,7 @@ private
     @values = Array.new
 
     9.times { |a|
-      line = TkFrame.new #masterFrame #.pack 'expand'=>true
+      line = TkFrame.new
       3.times { |f|
         cell = TkFrame.new(line){ background Colors[(f%2)+(a/3)] } . pack "side"=>"left", 'expand'=>true
         3.times { |g|
