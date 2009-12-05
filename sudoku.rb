@@ -70,7 +70,7 @@ private
         cell = TkFrame.new(line){ background Colors[(f%2)+(a/3)] } . pack "side"=>"left", 'expand'=>true
         3.times { |g|
           @values << TkVariable.new
-          @buttons << TkEntry.new(cell, 'textvariable' => @values[-1]) { width 2; justify "center"; background LColors[(f%2)+(a/3)] }
+          @buttons << TkEntry.new(cell, 'textvariable' => @values[-1]) { width 2; justify "center"; readonlybackground LColors[(f%2)+(a/3)]; state "readonly" }
           @buttons[-1].pack "side" => "left", 'expand' => true, "pady" => 5, "padx" => 4
           @buttons[-1].font('9x15')
         }
@@ -79,12 +79,8 @@ private
     }
 
     @buttons.each_index { |i|
-      @buttons[i].bind("Any-ButtonRelease") { # click mysi dovnitr pole
-        @buttons[i].cursor = 1
-      }
       @buttons[i].bind("Any-KeyRelease") { |event|
         entries_any_key_event event, i
-        puts "anyrelease"
       }
     }
   end
@@ -143,18 +139,15 @@ private
   def entries_any_key_event event, coord
     if event.char >= "1" and event.char <= "9" then
       @buttons[coord].configure "foreground" => "#000"
+      @values[coord].value = event.char
       @buttons[(coord+1)% 81].focus
-      @buttons[(coord+1)% 81].cursor = 1
-    elsif event.char.downcase != "" and event.char != "\t" then
-      @buttons[coord].value = @buttons[coord].value.delete(@buttons[coord].value.delete "123456789")
+    elsif event.char == " " then
+      @buttons[(coord+1)% 81].focus
+    elsif event.char == "\b" then
+      @values[coord].value = ""
     else
-      movecursor event.keysym, coord  #event a souradnice
+      movecursor event.keysym, coord
     end
-    @values.each_index { |i|
-      if @values[i].value.size > 0 then
-        @values[i].value = @values[i].value.strip[-1].chr
-      end
-    }
   end
 
   def movecursor keysym, coord
