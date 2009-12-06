@@ -23,13 +23,14 @@ private
     solve = proc { init_variables; update_sudoku; color_red; solve_sudoku; print; update_window }
     new   = proc { clear_all; color_black }
     open = proc {
-      filename = Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku"))
+      filename = Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku", "initialdir"=>"examples"))
       if filename == "" then
         ;
       elsif open_sudoku filename then
         color_black; update_window;
       else
-        msgBox = Tk.messageBox('type'=>"ok", 'icon'=>"error", 'title'=>"Error", 'message'=>"Selected file is not in valid format" )
+        msgBox = Tk.messageBox('type'=>"ok", 'icon'=>"error", 'title'=>"Error",
+          'message'=>"Selected file is not in valid format" )
       end
     }
     save = proc { save_sudoku Tk.getSaveFile( DialogParams.update("title"=>"Save Sudoku") ) }
@@ -37,7 +38,8 @@ private
     prin = proc { begin; print; rescue; end } #toDEL
     prin_ver = proc { begin; print_verbose; rescue; end } #toDEL
 
-    @root = TkRoot.new() { title "SUDOKU"; resizable  false, false;  geometry '306x314' } # ; iconbitmap "sudoku.ico" } # +-position_x+-position_y
+    @root = TkRoot.new() { title "SUDOKU"; resizable  false, false;  geometry '306x296' }
+      # ; iconbitmap "sudoku.ico" } # +-position_x+-position_y
 
     bar = TkMenu.new()
     sys = TkMenu.new(bar) { tearoff false }
@@ -59,15 +61,18 @@ private
     9.times { |a|
       line = TkFrame.new
       3.times { |f|
-        cell = TkFrame.new(line){ background Colors[(f%2)+(a/3)] } . pack "side"=>"left", 'expand'=>true
+        cell = TkFrame.new(line){ background Colors[(f%2)+(a/3)] } . pack "side"=>"left"
         3.times { |g|
           @values << TkVariable.new
-          @buttons << TkEntry.new(cell, 'textvariable' => @values[-1]) { width 2; justify "center"; readonlybackground LColors[(f%2)+(a/3)]; state "readonly" }
-          @buttons[-1].pack "side" => "left", 'expand' => true, "pady" => 5, "padx" => 4
+          @buttons << TkEntry.new(cell, 'textvariable' => @values[-1]) { width 2; justify "center";
+            readonlybackground LColors[(f%2)+(a/3)]; state "readonly"; borderwidth 1;
+            highlightthickness 1; highlightbackground LColors[(f%2)+(a/3)]
+          }
+          @buttons[-1].pack "side" => "left", "pady" => 4, "padx" => 4
           @buttons[-1].font('9x15')
         }
       }
-      line.pack 'expand'=>true
+      line.pack 
     }
 
     @buttons.each_index { |i|
@@ -135,7 +140,7 @@ private
       @buttons[(coord+1)% 81].focus
     elsif event.char == " " then
       @buttons[(coord+1)% 81].focus
-    elsif event.char == "\b" then
+    elsif event.keysym == "BackSpace" then
       @values[coord].value = ""
     else
       movecursor event.keysym, coord

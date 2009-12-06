@@ -183,7 +183,7 @@ class Sudoku_core
     9.times { |i|
       9.times { |j|
         if @sudoku[i][j].length == 1
-          STDOUT.print @sudoku[i][j].to_s.delete '[]'
+          STDOUT.print @sudoku[i][j].to_s.delete('[]')
         else 
           STDOUT.print '0'
         end
