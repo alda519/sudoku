@@ -140,7 +140,7 @@ private
       @buttons[(coord+1)% 81].focus
     elsif event.char == " " then
       @buttons[(coord+1)% 81].focus
-    elsif event.keysym == "BackSpace" then
+    elsif event.keysym == "BackSpace" or event.keysym == "Delete" then
       @values[coord].value = ""
     else
       movecursor event.keysym, coord
