@@ -51,9 +51,9 @@ class Sudoku_core
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
   def solve_sudoku
-    check_rows
-    check_cols
-    check_cells
+#    check_rows
+#    check_cols
+#    check_cells
     begin
       sizep = @sudoku.flatten.size
       check_rows

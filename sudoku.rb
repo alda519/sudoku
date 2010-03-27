@@ -1,8 +1,17 @@
 #!/usr/bin/ruby
 
-require 'sudoku_core.rb'
-
 require 'tk'
+
+def relativepath
+  c = $0.split "/"
+  c.pop 
+  c = c.join "/"
+  if not c.empty? then c + "/" else c end
+end
+
+RELATIVE_PATH = relativepath
+
+require "#{RELATIVE_PATH}sudoku_core.rb"
 
 
 class TkSudoku < Sudoku_core
@@ -23,7 +32,7 @@ private
     solve = proc { init_variables; update_sudoku; color_red; solve_sudoku; print; update_window }
     new   = proc { clear_all; color_black }
     open = proc {
-      filename = Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku", "initialdir"=>"examples"))
+      filename = Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku", "initialdir"=>"#{RELATIVE_PATH}examples"))
       if filename == "" then
         ;
       elsif open_sudoku filename then
