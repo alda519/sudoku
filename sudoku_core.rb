@@ -1,4 +1,4 @@
-class Sudoku_core
+class SudokuCore
 
   def initialize
     init_variables
@@ -7,7 +7,6 @@ class Sudoku_core
   def open_sudoku filename
     begin
       file = File.new filename, "r"
-      #puts "opened #{filename}"
       9.times { |i|
         @sudoku[i] = Array.new
         9.times { |j|
@@ -29,6 +28,18 @@ class Sudoku_core
   end
 
 
+  def solve_sudoku
+    begin
+      sizep = @sudoku.flatten.size
+      check_rows
+      check_cols
+      check_cells
+    end while sizep > @sudoku.flatten.size
+    return @sudoku.flatten.size == 81
+  end
+  
+private
+
   def init_variables
     @cols = Array.new 9
     @cols.each_index { |i|
@@ -44,24 +55,9 @@ class Sudoku_core
     @cells.each_index { |i|
       @cells[i] = [ [1,2,3,4,5,6,7,8,9], [1,2,3,4,5,6,7,8,9], [1,2,3,4,5,6,7,8,9] ]
     }
-#    @cyc = 0
     @sudoku = Array.new
   end
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-
-  def solve_sudoku
-#    check_rows
-#    check_cols
-#    check_cells
-    begin
-      sizep = @sudoku.flatten.size
-      check_rows
-      check_cols
-      check_cells
-    end while sizep > @sudoku.flatten.size
-  end
-  
   def del_row row, val
     @rows[row].delete val
     9.times { |i|

@@ -14,41 +14,36 @@ RELATIVE_PATH = relativepath
 require "#{RELATIVE_PATH}sudoku_core.rb"
 
 
-class TkSudoku < Sudoku_core
+class TkSudoku < SudokuCore
 
   Colors=["#daeaea", "#f8e7cd"] * 2
   LColors=["#eafafa", "#fff7dd"] * 2
-  DialogParams = { "defaultextension" => ".sudoku", "filetypes" => [["Sudoku", [".sudoku"]], ["All files", ["*.*"]]] }
+  DialogParams = { "defaultextension" => ".sudoku", "filetypes" => [["Sudoku", [".sudoku"]], ["All files", ["*.*"]]], "initialdir"=>"#{RELATIVE_PATH}examples" }
 
   def initialize
     init_variables
-
     init_application
   end
 
 private
 
   def init_application
-    solve = proc { init_variables; update_sudoku; color_red; solve_sudoku; print; update_window }
+    solve = proc { init_variables; update_sudoku; color_red; solve_sudoku; update_window }
     new   = proc { clear_all; color_black }
     open = proc {
-      filename = Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku", "initialdir"=>"#{RELATIVE_PATH}examples"))
+      filename = Tk.getOpenFile( DialogParams.update("title"=>"Open Sudoku"))
       if filename == "" then
         ;
       elsif open_sudoku filename then
         color_black; update_window;
       else
         msgBox = Tk.messageBox('type'=>"ok", 'icon'=>"error", 'title'=>"Error",
-          'message'=>"Selected file is not in valid format" )
+          'message'=>"Can't read #{filename}")
       end
     }
     save = proc { save_sudoku Tk.getSaveFile( DialogParams.update("title"=>"Save Sudoku") ) }
 
-    prin = proc { begin; print; rescue; end } #toDEL
-    prin_ver = proc { begin; print_verbose; rescue; end } #toDEL
-
-    @root = TkRoot.new() { title "SUDOKU"; resizable  false, false;  geometry '306x296' }
-      # ; iconbitmap "sudoku.ico" } # +-position_x+-position_y
+    @root = TkRoot.new() { title "SUDOKU"; resizable  false, false; geometry '306x296' }
 
     bar = TkMenu.new()
     sys = TkMenu.new(bar) { tearoff false }
@@ -58,10 +53,8 @@ private
     sys.add 'separator'
     sys.add 'command', 'label'=>"Quit", 'underline'=>0, 'command' => proc { @root.destroy }
     
-    bar.add 'cascade', 'menu' => sys, 'label'=>"Menu", 'underline'=> 0
+    bar.add 'cascade', 'menu' => sys, 'label'=>"File", 'underline'=> 0
     bar.add 'command', 'label'=>"Solve", 'underline'=>0, 'command' => solve
-    bar.add 'command', 'label'=>"Print", 'underline'=>0, 'command' => prin #toDEL
-    bar.add 'command', 'label'=>"Print!", 'underline'=>0, 'command' => prin_ver
     @root.menu bar
 
     @buttons = Array.new
@@ -83,7 +76,6 @@ private
       }
       line.pack 
     }
-
     @buttons.each_index { |i|
       @buttons[i].bind("Any-KeyRelease") { |event|
         entries_any_key_event event, i
@@ -141,7 +133,7 @@ private
     end
   end
 
-
+private
   def entries_any_key_event event, coord
     if event.char >= "1" and event.char <= "9" then
       @buttons[coord].configure "foreground" => "#000"
@@ -178,7 +170,6 @@ private
   def color_red
     @buttons.each_index { |i|
       if @buttons[i].value.size != 1 then
-        # @buttons[i].configure 'state' => 'disabled'
         @buttons[i].configure "foreground" => "#f00" 
       end
     }
@@ -186,14 +177,11 @@ private
   
   def color_black
     @buttons.each_index { |i|   
-      # @buttons[i].configure 'state' => 'normal'
       @buttons[i].configure "foreground" => "#000" 
     }
   end
 
 end
 
-
-sudoku = TkSudoku.new
-
+TkSudoku.new
 Tk.mainloop
