@@ -174,7 +174,7 @@ private
     }
   end
   
-  
+public  
   def print
     9.times { |i|
       9.times { |j|

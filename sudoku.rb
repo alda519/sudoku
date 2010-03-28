@@ -16,16 +16,17 @@ require "#{RELATIVE_PATH}sudoku_core.rb"
 
 class TkSudoku < SudokuCore
 
-  Colors=["#daeaea", "#f8e7cd"] * 2
-  LColors=["#eafafa", "#fff7dd"] * 2
-  DialogParams = { "defaultextension" => ".sudoku", "filetypes" => [["Sudoku", [".sudoku"]], ["All files", ["*.*"]]], "initialdir"=>"#{RELATIVE_PATH}examples" }
-
   def initialize
     init_variables
     init_application
   end
 
 private
+
+  Colors=["#daeaea", "#f8e7cd"] * 2
+  LColors=["#eafafa", "#fff7dd"] * 2
+  DialogParams = { "defaultextension" => ".sudoku", "filetypes" => [["Sudoku", [".sudoku"]], ["All files", ["*.*"]]], "initialdir"=>"#{RELATIVE_PATH}examples" }
+
 
   def init_application
     solve = proc { init_variables; update_sudoku; color_red; solve_sudoku; update_window }
